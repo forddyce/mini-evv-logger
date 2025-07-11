@@ -8,8 +8,9 @@
       "src": "apps/web/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "installCommand": "pnpm install --filter=web",
-        "buildCommand": "pnpm build --filter=web",
+        "root": "apps/web",
+        "installCommand": "pnpm install",
+        "buildCommand": "pnpm build",
         "outputDirectory": "dist"
       }
     }
@@ -22,20 +23,19 @@
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization"
       },
-      "continue": true,
-      "dest": "/apps/api"
+      "continue": true
     },
     {
       "src": "/api/(.*)",
-      "dest": "/apps/api"
+      "dest": "/apps/api/api/index.go"
     },
     {
       "src": "/swagger/(.*)",
-      "dest": "/apps/api/swagger"
+      "dest": "/apps/api/api/index.go"
     },
     {
       "src": "/(.*)",
-      "dest": "/apps/web/dist/$1"
+      "dest": "/apps/web"
     }
   ]
 }
