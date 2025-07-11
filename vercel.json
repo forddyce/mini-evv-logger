@@ -28,7 +28,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/api/index.go"
+      "destination": "/api/index.go"
     }
   ]
 }
