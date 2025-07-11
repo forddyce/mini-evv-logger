@@ -1,11 +1,10 @@
 {
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm build",
   "builds": [
     {
       "src": "apps/api/api/index.go",
-      "use": "@vercel/go@3.0.0",
-      "config": {
-        "root": "apps/api"
-      }
+      "use": "@vercel/go"
     },
     {
       "src": "apps/web/package.json",
@@ -18,7 +17,6 @@
       }
     }
   ],
-
   "routes": [
     {
       "src": "/api/(.*)",
@@ -39,8 +37,12 @@
       "dest": "/apps/api/api/index.go"
     },
     {
+      "src": "/assets/(.*)",
+      "dest": "/apps/web/assets/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/apps/web"
+      "dest": "/apps/web/index.html"
     }
   ]
 }
