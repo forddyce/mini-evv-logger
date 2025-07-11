@@ -8,27 +8,10 @@
       "maxDuration": 10
     }
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization"
-      },
-      "continue": true
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/apps/api"
-    },
-    {
-      "src": "/swagger/(.*)",
-      "dest": "/apps/api"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/apps/web"
+      "source": "/api/(.*)",
+      "destination": "/api"
     }
   ]
 }
