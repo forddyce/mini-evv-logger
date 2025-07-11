@@ -4,7 +4,10 @@
   "builds": [
     {
       "src": "apps/api/api/index.go",
-      "use": "@vercel/go"
+      "use": "@vercel/go",
+      "config": {
+        "root": "apps/api"
+      }
     },
     {
       "src": "apps/web/package.json",

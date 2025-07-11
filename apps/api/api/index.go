@@ -18,6 +18,9 @@ import (
 // @description This is the API for the EVV Logger application.
 // @BasePath /api
 // @schemes http https
+// @host example.com
+// @contact.name Fordyce Gozali
+// @contact.email forddyce92@gmail.com
 func init() {
 	if setup.AppHandler == nil {
 		log.Fatal("ScheduleHandler was not initialized by the setup package.")
