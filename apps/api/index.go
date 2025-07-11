@@ -37,7 +37,6 @@ func initDB() {
 		log.Fatal("SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables are not set.")
 	}
 
-	// Initialize the Supabase client from the community library
 	var err error
 	supabaseClient, err = supabase.NewClient(supabaseURL, supabaseServiceRoleKey, nil)
 	if err != nil {
