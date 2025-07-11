@@ -413,7 +413,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "address": {
-                    "description": "Human-readable address",
                     "type": "string"
                 },
                 "latitude": {
@@ -428,7 +427,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "clientAvatar": {
-                    "description": "URL or identifier for client avatar",
                     "type": "string"
                 },
                 "clientId": {
@@ -438,28 +436,16 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "endLocation": {
-                    "description": "Location at clock-out",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.Location"
-                        }
-                    ]
+                    "$ref": "#/definitions/models.Location"
                 },
                 "endTime": {
-                    "description": "e.g., \"10:00\"",
                     "type": "string"
                 },
                 "id": {
-                    "description": "UUID from Supabase",
                     "type": "string"
                 },
                 "location": {
-                    "description": "Stored as JSONB in DB, or separate columns",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.Location"
-                        }
-                    ]
+                    "$ref": "#/definitions/models.Location"
                 },
                 "serviceName": {
                     "type": "string"
@@ -468,38 +454,27 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "shiftDate": {
-                    "description": "e.g., \"Mon, 15 Jan 2025\"",
                     "type": "string"
                 },
                 "startLocation": {
-                    "description": "Location at clock-in",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.Location"
-                        }
-                    ]
+                    "$ref": "#/definitions/models.Location"
                 },
                 "startTime": {
-                    "description": "e.g., \"09:00\"",
                     "type": "string"
                 },
                 "status": {
-                    "description": "\"scheduled\", \"in_progress\", \"completed\", \"cancelled\"",
                     "type": "string"
                 },
                 "tasks": {
-                    "description": "Slice of Tasks associated with this schedule",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.Task"
                     }
                 },
                 "visitEnd": {
-                    "description": "Actual clock-out timestamp",
                     "type": "string"
                 },
                 "visitStart": {
-                    "description": "Actual clock-in timestamp",
                     "type": "string"
                 }
             }
@@ -525,22 +500,18 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "completed": {
-                    "description": "True if task is completed",
                     "type": "boolean"
                 },
                 "description": {
                     "type": "string"
                 },
                 "id": {
-                    "description": "UUID",
                     "type": "string"
                 },
                 "reason": {
-                    "description": "Optional reason if not completed",
                     "type": "string"
                 },
                 "scheduleId": {
-                    "description": "Foreign key to Schedule",
                     "type": "string"
                 }
             }

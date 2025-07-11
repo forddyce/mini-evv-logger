@@ -28,7 +28,6 @@ definitions:
   models.Location:
     properties:
       address:
-        description: Human-readable address
         type: string
       latitude:
         type: number
@@ -38,53 +37,38 @@ definitions:
   models.Schedule:
     properties:
       clientAvatar:
-        description: URL or identifier for client avatar
         type: string
       clientId:
         type: string
       clientName:
         type: string
       endLocation:
-        allOf:
-        - $ref: '#/definitions/models.Location'
-        description: Location at clock-out
+        $ref: '#/definitions/models.Location'
       endTime:
-        description: e.g., "10:00"
         type: string
       id:
-        description: UUID from Supabase
         type: string
       location:
-        allOf:
-        - $ref: '#/definitions/models.Location'
-        description: Stored as JSONB in DB, or separate columns
+        $ref: '#/definitions/models.Location'
       serviceName:
         type: string
       serviceNotes:
         type: string
       shiftDate:
-        description: e.g., "Mon, 15 Jan 2025"
         type: string
       startLocation:
-        allOf:
-        - $ref: '#/definitions/models.Location'
-        description: Location at clock-in
+        $ref: '#/definitions/models.Location'
       startTime:
-        description: e.g., "09:00"
         type: string
       status:
-        description: '"scheduled", "in_progress", "completed", "cancelled"'
         type: string
       tasks:
-        description: Slice of Tasks associated with this schedule
         items:
           $ref: '#/definitions/models.Task'
         type: array
       visitEnd:
-        description: Actual clock-out timestamp
         type: string
       visitStart:
-        description: Actual clock-in timestamp
         type: string
     type: object
   models.ScheduleStats:
@@ -101,18 +85,14 @@ definitions:
   models.Task:
     properties:
       completed:
-        description: True if task is completed
         type: boolean
       description:
         type: string
       id:
-        description: UUID
         type: string
       reason:
-        description: Optional reason if not completed
         type: string
       scheduleId:
-        description: Foreign key to Schedule
         type: string
     type: object
 info:

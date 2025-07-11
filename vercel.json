@@ -2,11 +2,15 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api"
+      "destination": "http://localhost:8080/api/$1"
+    },
+    {
+      "source": "/swagger/(.*)",
+      "destination": "http://localhost:8080/swagger/$1"
     },
     {
       "source": "/(.*)",
-      "destination": "/apps/web"
+      "destination": "http://localhost:5173/$1"
     }
   ],
   "headers": [
