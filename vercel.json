@@ -1,4 +1,6 @@
 {
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm build",
   "builds": [
     {
       "src": "apps/api/api/index.go",
@@ -9,8 +11,6 @@
       "use": "@vercel/static-build",
       "config": {
         "root": "apps/web",
-        "installCommand": "pnpm install",
-        "buildCommand": "pnpm build",
         "outputDirectory": "dist"
       }
     }
