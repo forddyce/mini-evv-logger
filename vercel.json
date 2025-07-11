@@ -1,13 +1,12 @@
 {
-  "functions": {
-    "apps/api/api/index.go": {
-      "runtime": "@vercel/go@3.0.0",
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  },
-
   "builds": [
+    {
+      "src": "apps/api/api/index.go",
+      "use": "@vercel/go@3.0.0",
+      "config": {
+        "root": "apps/api"
+      }
+    },
     {
       "src": "apps/web/package.json",
       "use": "@vercel/static-build",
@@ -19,7 +18,6 @@
       }
     }
   ],
-
   "routes": [
     {
       "src": "/api/(.*)",
