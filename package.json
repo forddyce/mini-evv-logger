@@ -3,12 +3,15 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "dotenv -- turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "check-types": "turbo run check-types",
+    "start:backend": "dotenv -- turbo run start --filter=api",
+    "start:frontend": "dotenv -- turbo run dev --filter=web"
   },
   "devDependencies": {
+    "dotenv-cli": "^8.0.0",
     "prettier": "^3.6.2",
     "turbo": "^2.5.4",
     "typescript": "5.8.3"
@@ -16,9 +19,5 @@
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "npm@11.3.0",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+  "packageManager": "pnpm@10.13.1"
 }
