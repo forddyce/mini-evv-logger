@@ -1,28 +1,23 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a sample API for a fullstack application.",
-        "title": "Go Backend API",
-        "contact": {},
-        "version": "1.0"
+        "contact": {}
     },
-    "host": "localhost:8080",
-    "basePath": "/api",
     "paths": {
-        "/users": {
+        "/schedules": {
             "get": {
-                "description": "Get a list of all users from the database",
+                "description": "Get a list of all schedules with their associated tasks.",
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get all users",
+                "summary": "Get all schedules",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully retrieved schedules",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/main.User"
+                                "$ref": "#/definitions/models.Schedule"
                             }
                         }
                     },
@@ -36,32 +31,308 @@
                         }
                     }
                 }
-            },
+            }
+        },
+        "/schedules/reset": {
             "post": {
-                "description": "Add a new user to the database",
+                "description": "Resets the status of sample schedules and tasks for demonstration purposes.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Reset sample data",
+                "responses": {
+                    "200": {
+                        "description": "Sample data reset successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/schedules/stats": {
+            "get": {
+                "description": "Get aggregated statistics for all schedules (Total, Missed, Upcoming, Completed).",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get schedule statistics",
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved schedule statistics",
+                        "schema": {
+                            "$ref": "#/definitions/models.ScheduleStats"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/schedules/today": {
+            "get": {
+                "description": "Get a list of all schedules (for demo purposes, returns all schedules).",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get today's schedules",
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved today's schedules",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Schedule"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/schedules/{id}": {
+            "get": {
+                "description": "Get a single schedule by its ID, including its tasks.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get schedule by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schedule ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved schedule",
+                        "schema": {
+                            "$ref": "#/definitions/models.Schedule"
+                        }
+                    },
+                    "404": {
+                        "description": "Schedule not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/schedules/{id}/end": {
+            "post": {
+                "description": "Log the end time and location for a schedule.",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Create a new user",
+                "summary": "End a visit",
                 "parameters": [
                     {
-                        "description": "User object to be created",
-                        "name": "user",
+                        "type": "string",
+                        "description": "Schedule ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "End visit details",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.User"
+                            "$ref": "#/definitions/handler.EndVisitRequest"
                         }
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "Visit ended successfully",
                         "schema": {
-                            "$ref": "#/definitions/main.User"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict (e.g., visit not in progress)",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/schedules/{id}/start": {
+            "post": {
+                "description": "Log the start time and location for a schedule.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Start a visit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schedule ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Start visit details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.StartVisitRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Visit started successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict (e.g., visit already in progress)",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/tasks/{taskId}/update": {
+            "post": {
+                "description": "Update the completion status of a specific task.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update task status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "taskId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Task update details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateTaskStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Task status updated successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "400": {
@@ -87,16 +358,178 @@
         }
     },
     "definitions": {
-        "main.User": {
+        "handler.EndVisitRequest": {
             "type": "object",
             "properties": {
-                "email": {
+                "address": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                }
+            }
+        },
+        "handler.StartVisitRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                }
+            }
+        },
+        "handler.UpdateTaskStatusRequest": {
+            "type": "object",
+            "properties": {
+                "completed": {
+                    "type": "boolean"
+                },
+                "reason": {
+                    "description": "Optional reason",
+                    "type": "string"
+                }
+            }
+        },
+        "models.Location": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "Human-readable address",
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.Schedule": {
+            "type": "object",
+            "properties": {
+                "clientAvatar": {
+                    "description": "URL or identifier for client avatar",
+                    "type": "string"
+                },
+                "clientId": {
+                    "type": "string"
+                },
+                "clientName": {
+                    "type": "string"
+                },
+                "endLocation": {
+                    "description": "Location at clock-out",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Location"
+                        }
+                    ]
+                },
+                "endTime": {
+                    "description": "e.g., \"10:00\"",
                     "type": "string"
                 },
                 "id": {
+                    "description": "UUID from Supabase",
                     "type": "string"
                 },
-                "name": {
+                "location": {
+                    "description": "Stored as JSONB in DB, or separate columns",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Location"
+                        }
+                    ]
+                },
+                "serviceName": {
+                    "type": "string"
+                },
+                "serviceNotes": {
+                    "type": "string"
+                },
+                "shiftDate": {
+                    "description": "e.g., \"Mon, 15 Jan 2025\"",
+                    "type": "string"
+                },
+                "startLocation": {
+                    "description": "Location at clock-in",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Location"
+                        }
+                    ]
+                },
+                "startTime": {
+                    "description": "e.g., \"09:00\"",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "\"scheduled\", \"in_progress\", \"completed\", \"cancelled\"",
+                    "type": "string"
+                },
+                "tasks": {
+                    "description": "Slice of Tasks associated with this schedule",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Task"
+                    }
+                },
+                "visitEnd": {
+                    "description": "Actual clock-out timestamp",
+                    "type": "string"
+                },
+                "visitStart": {
+                    "description": "Actual clock-in timestamp",
+                    "type": "string"
+                }
+            }
+        },
+        "models.ScheduleStats": {
+            "type": "object",
+            "properties": {
+                "completedToday": {
+                    "type": "integer"
+                },
+                "missedSchedules": {
+                    "type": "integer"
+                },
+                "totalSchedules": {
+                    "type": "integer"
+                },
+                "upcomingToday": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Task": {
+            "type": "object",
+            "properties": {
+                "completed": {
+                    "description": "True if task is completed",
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "UUID",
+                    "type": "string"
+                },
+                "reason": {
+                    "description": "Optional reason if not completed",
+                    "type": "string"
+                },
+                "scheduleId": {
+                    "description": "Foreign key to Schedule",
                     "type": "string"
                 }
             }

@@ -1,32 +1,134 @@
-basePath: /api
 definitions:
-  main.User:
+  handler.EndVisitRequest:
     properties:
-      email:
+      address:
         type: string
-      id:
+      latitude:
+        type: number
+      longitude:
+        type: number
+    type: object
+  handler.StartVisitRequest:
+    properties:
+      address:
         type: string
-      name:
+      latitude:
+        type: number
+      longitude:
+        type: number
+    type: object
+  handler.UpdateTaskStatusRequest:
+    properties:
+      completed:
+        type: boolean
+      reason:
+        description: Optional reason
         type: string
     type: object
-host: localhost:8080
+  models.Location:
+    properties:
+      address:
+        description: Human-readable address
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+    type: object
+  models.Schedule:
+    properties:
+      clientAvatar:
+        description: URL or identifier for client avatar
+        type: string
+      clientId:
+        type: string
+      clientName:
+        type: string
+      endLocation:
+        allOf:
+        - $ref: '#/definitions/models.Location'
+        description: Location at clock-out
+      endTime:
+        description: e.g., "10:00"
+        type: string
+      id:
+        description: UUID from Supabase
+        type: string
+      location:
+        allOf:
+        - $ref: '#/definitions/models.Location'
+        description: Stored as JSONB in DB, or separate columns
+      serviceName:
+        type: string
+      serviceNotes:
+        type: string
+      shiftDate:
+        description: e.g., "Mon, 15 Jan 2025"
+        type: string
+      startLocation:
+        allOf:
+        - $ref: '#/definitions/models.Location'
+        description: Location at clock-in
+      startTime:
+        description: e.g., "09:00"
+        type: string
+      status:
+        description: '"scheduled", "in_progress", "completed", "cancelled"'
+        type: string
+      tasks:
+        description: Slice of Tasks associated with this schedule
+        items:
+          $ref: '#/definitions/models.Task'
+        type: array
+      visitEnd:
+        description: Actual clock-out timestamp
+        type: string
+      visitStart:
+        description: Actual clock-in timestamp
+        type: string
+    type: object
+  models.ScheduleStats:
+    properties:
+      completedToday:
+        type: integer
+      missedSchedules:
+        type: integer
+      totalSchedules:
+        type: integer
+      upcomingToday:
+        type: integer
+    type: object
+  models.Task:
+    properties:
+      completed:
+        description: True if task is completed
+        type: boolean
+      description:
+        type: string
+      id:
+        description: UUID
+        type: string
+      reason:
+        description: Optional reason if not completed
+        type: string
+      scheduleId:
+        description: Foreign key to Schedule
+        type: string
+    type: object
 info:
   contact: {}
-  description: This is a sample API for a fullstack application.
-  title: Go Backend API
-  version: "1.0"
 paths:
-  /users:
+  /schedules:
     get:
-      description: Get a list of all users from the database
+      description: Get a list of all schedules with their associated tasks.
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully retrieved schedules
           schema:
             items:
-              $ref: '#/definitions/main.User'
+              $ref: '#/definitions/models.Schedule'
             type: array
         "500":
           description: Internal Server Error
@@ -34,25 +136,209 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Get all users
-    post:
-      consumes:
-      - application/json
-      description: Add a new user to the database
+      summary: Get all schedules
+  /schedules/{id}:
+    get:
+      description: Get a single schedule by its ID, including its tasks.
       parameters:
-      - description: User object to be created
-        in: body
-        name: user
+      - description: Schedule ID
+        in: path
+        name: id
         required: true
-        schema:
-          $ref: '#/definitions/main.User'
+        type: string
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: Successfully retrieved schedule
           schema:
-            $ref: '#/definitions/main.User'
+            $ref: '#/definitions/models.Schedule'
+        "404":
+          description: Schedule not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get schedule by ID
+  /schedules/{id}/end:
+    post:
+      consumes:
+      - application/json
+      description: Log the end time and location for a schedule.
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: End visit details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.EndVisitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Visit ended successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict (e.g., visit not in progress)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: End a visit
+  /schedules/{id}/start:
+    post:
+      consumes:
+      - application/json
+      description: Log the start time and location for a schedule.
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Start visit details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.StartVisitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Visit started successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict (e.g., visit already in progress)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Start a visit
+  /schedules/reset:
+    post:
+      description: Resets the status of sample schedules and tasks for demonstration
+        purposes.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sample data reset successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Reset sample data
+  /schedules/stats:
+    get:
+      description: Get aggregated statistics for all schedules (Total, Missed, Upcoming,
+        Completed).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved schedule statistics
+          schema:
+            $ref: '#/definitions/models.ScheduleStats'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get schedule statistics
+  /schedules/today:
+    get:
+      description: Get a list of all schedules (for demo purposes, returns all schedules).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved today's schedules
+          schema:
+            items:
+              $ref: '#/definitions/models.Schedule'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get today's schedules
+  /tasks/{taskId}/update:
+    post:
+      consumes:
+      - application/json
+      description: Update the completion status of a specific task.
+      parameters:
+      - description: Task ID
+        in: path
+        name: taskId
+        required: true
+        type: string
+      - description: Task update details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateTaskStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Task status updated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "400":
           description: Bad Request
           schema:
@@ -65,5 +351,5 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Create a new user
+      summary: Update task status
 swagger: "2.0"

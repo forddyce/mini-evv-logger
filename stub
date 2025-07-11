@@ -1,0 +1,17 @@
+evv-logger/apps/api/
+├── api/             # Vercel entry point (contains index.go)
+│   └── index.go     # Vercel serverless function entry point (replaces main.go)
+├── docs/            # Swagger documentation output
+├── internal/        # Private application code (not exposed outside this module)
+│   ├── models/      # Database models (structs for data)
+│   │   ├── schedule.go
+│   │   └── task.go
+│   ├── repository/  # Database interaction logic (e.g., Supabase calls)
+│   │   └── schedule_repository.go
+│   ├── service/     # Business logic and coordination between repository and handler
+│   │   └── schedule_service.go
+│   └── handler/     # HTTP request handlers
+│       └── schedule_handler.go
+├── go.mod           # Go module file
+├── go.sum           # Go module checksums
+└── vercel.json      # Vercel configuration for this

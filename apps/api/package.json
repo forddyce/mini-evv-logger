@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "go run index.go",
-    "build": "echo 'Vercel handles Go build, skipping local build for deployment'",
-    "start": "echo 'Vercel handles Go start, skipping local start for deployment'",
-    "swagger": "swag init -g index.go"
+    "dev": "go run cmd/api/main.go",
+    "swagger": "swag init -g api/index.go"
   }
 }

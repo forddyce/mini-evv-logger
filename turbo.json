@@ -24,7 +24,7 @@
     "swagger": {
       "outputs": ["docs/**"],
       "cache": false,
-      "inputs": ["apps/api/index.go"]
+      "inputs": ["apps/api/api/index.go"]
     },
     "start": {
       "cache": false,
