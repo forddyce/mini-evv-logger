@@ -1,34 +1,47 @@
 {
-  "installCommand": "pnpm install",
-  "buildCommand": "pnpm build",
   "functions": {
     "apps/api/api/index.go": {
-      "runtime": "go1.22",
+      "runtime": "@vercel/go@3.0.0",
       "memory": 1024,
       "maxDuration": 10
     }
   },
-  "headers": [
+
+  "builds": [
     {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Credentials", "value": "true" },
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
-        }
-      ]
+      "src": "apps/web/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "root": "apps/web",
+        "installCommand": "pnpm install --filter=web",
+        "buildCommand": "pnpm build --filter=web",
+        "outputDirectory": "dist"
+      }
     }
   ],
-  "rewrites": [
+
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index.go"
+      "src": "/api/(.*)",
+      "headers": {
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
+      },
+      "continue": true
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/apps/api/api/index.go"
+    },
+    {
+      "src": "/swagger/(.*)",
+      "dest": "/apps/api/api/index.go"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/apps/web"
     }
   ]
 }
