@@ -1,19 +1,21 @@
 {
   "installCommand": "pnpm install",
   "buildCommand": "pnpm build",
+  "functions": {
+    "apps/api/api/index.go": {
+      "runtime": "@vercel/go@3.0.0",
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
   "builds": [
-    {
-      "src": "apps/api/api/index.go",
-      "use": "@vercel/go",
-      "config": {
-        "root": "apps/api"
-      }
-    },
     {
       "src": "apps/web/package.json",
       "use": "@vercel/static-build",
       "config": {
         "root": "apps/web",
+        "installCommand": "pnpm install --filter=web",
+        "buildCommand": "pnpm build --filter=web",
         "outputDirectory": "dist"
       }
     }
