@@ -39,15 +39,5 @@
         "outputDirectory": "dist"
       }
     }
-  ],
-  "projects": [
-    {
-      "name": "web",
-      "root": "apps/web"
-    },
-    {
-      "name": "api",
-      "root": "apps/api"
-    }
   ]
 }
