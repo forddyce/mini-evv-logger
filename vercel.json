@@ -27,11 +27,11 @@
     },
     {
       "src": "/api/(.*)",
-      "dest": "/apps/api/api/index.go"
+      "dest": "/apps/api"
     },
     {
       "src": "/swagger/(.*)",
-      "dest": "/apps/api/api/index.go"
+      "dest": "/apps/api"
     },
     {
       "src": "/(.*)",

@@ -13,6 +13,11 @@ import (
 	"github.com/forddyce/mini-evv-logger/apps/api/setup"
 )
 
+// @title EVV Logger API
+// @version 1.0
+// @description This is the API for the EVV Logger application.
+// @BasePath /api
+// @schemes http https
 func init() {
 	if setup.AppHandler == nil {
 		log.Fatal("ScheduleHandler was not initialized by the setup package.")
