@@ -1,16 +1,31 @@
 {
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api"
+      "src": "apps/api/api/index.go",
+      "use": "@vercel/go"
     },
     {
-      "source": "/swagger/(.*)",
-      "destination": "/swagger"
+      "src": "apps/web/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "installCommand": "pnpm install",
+        "buildCommand": "pnpm build",
+        "outputDirectory": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/apps/api"
     },
     {
-      "source": "/(.*)",
-      "destination": "/apps/web"
+      "src": "/swagger/(.*)",
+      "dest": "/apps/api/swagger"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/apps/web/dist/$1"
     }
   ],
   "headers": [
@@ -27,21 +42,6 @@
           "value": "Content-Type, Authorization"
         }
       ]
-    }
-  ],
-  "builds": [
-    {
-      "src": "apps/api/api/index.go",
-      "use": "@vercel/go"
-    },
-    {
-      "src": "apps/web/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "installCommand": "pnpm install",
-        "buildCommand": "pnpm build",
-        "outputDirectory": "dist"
-      }
     }
   ]
 }
