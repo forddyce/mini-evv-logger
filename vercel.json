@@ -8,8 +8,8 @@
       "src": "apps/web/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "installCommand": "pnpm install",
-        "buildCommand": "pnpm build",
+        "installCommand": "pnpm install --filter=web",
+        "buildCommand": "pnpm build --filter=web",
         "outputDirectory": "dist"
       }
     }
