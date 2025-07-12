@@ -1,98 +1,130 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
-interface ScheduleDetail {
-  id: string;
-  serviceName: string;
-  clientName: string;
-  clientAvatar: string;
-  date: string;
-  timeRange: string;
-  clientContactEmail: string;
-  clientContactPhone: string;
-  address: {
-    street: string;
-    cityStateZip: string;
-  };
-  tasks: string[];
-  serviceNotes: string;
-}
-
-const ALL_SCHEDULES_DETAILS: ScheduleDetail[] = [
-  {
-    id: "sch-001",
-    serviceName: "Service Name A",
-    clientName: "Melisa Adam",
-    clientAvatar: "https://placehold.co/48x48/E0E7FF/4F46E5?text=MA",
-    date: "Mon, 15 Jan 2025",
-    timeRange: "09:00 - 10:00",
-    clientContactEmail: "melisa@gmail.com",
-    clientContactPhone: "+44 1232 212 323",
-    address: {
-      street: "4333 Wilson Street",
-      cityStateZip: "Minneapolis, MN, 55415",
-    },
-    tasks: [
-      "Lorem ipsum dolor sit amet consectetur. Est id ullamcorper magna feugiat. Donec id at eu nibh sed lacus id. At mauris diam faucibus adipiscing feugiat dui lobortis.",
-      "Lorem ipsum dolor sit amet consectetur. Est id ullamcorper magna feugiat. Donec id at eu nibh sed lacus id. At mauris diam faucibus adipiscing feugiat dui lobortis.",
-      "Lorem ipsum dolor sit amet consectetur. Est id ullamcorper magna feugiat. Donec id at eu nibh sed lacus id. At mauris diam faucibus adipiscing feugiat dui lobortis.",
-      "Lorem ipsum dolor sit amet consectetur. Est id ullamcorper magna feugiat. Donec id at eu nibh sed lacus id. At mauris diam faucibus adipiscing feugiat dui lobortis.",
-    ],
-    serviceNotes:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum fen tempus sociis. Sodales libero mauris eu donec tempor in sagittis urna turpis. Vitae vestibulum convallis consequat commodo blandit in fusce viverra. Semper magna amet ipsum massa turpis non tortor. Etiam diam quae tristique nulla. Ipsum duis praesent sed a mattis morbi aliquam. Enim quam amet cras nibh. Amet qui malesuada ac in ultrices. Viverra sagittis aenean vulputate at orci aliquam enim.",
-  },
-  {
-    id: "sch-002",
-    serviceName: "Service Name B",
-    clientName: "John Doe",
-    clientAvatar: "https://placehold.co/48x48/E0E7FF/4F46E5?text=JD",
-    date: "Mon, 15 Jan 2025",
-    timeRange: "11:00 - 12:00",
-    clientContactEmail: "john.doe@example.com",
-    address: {
-      street: "123 Main St",
-      cityStateZip: "Anytown, CA, 90210",
-    },
-    tasks: ["Task 1 for John", "Task 2 for John"],
-    serviceNotes: "Notes for John Doe visit.",
-    clientContactPhone: "+1 555 123 4567",
-  },
-  {
-    id: "sch-003",
-    serviceName: "Service Name C",
-    clientName: "Jane Smith",
-    clientAvatar: "https://placehold.co/48x48/E0E7FF/4F46E5?text=JS",
-    date: "Mon, 15 Jan 2025",
-    timeRange: "13:00 - 14:00",
-    clientContactEmail: "jane.smith@example.com",
-    address: {
-      street: "456 Oak Ave",
-      cityStateZip: "Othercity, NY, 10001",
-    },
-    tasks: ["Task A for Jane", "Task B for Jane", "Task C for Jane"],
-    serviceNotes: "Notes for Jane Smith visit.",
-    clientContactPhone: "+1 555 987 6543",
-  },
-];
+import { useScheduleStore } from "../store/useScheduleStore"; // Import the Zustand store
+import type { Schedule, Task } from "../types/api"; // Import types
 
 const ScheduleDetailsPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>(); // Get schedule ID from URL
   const navigate = useNavigate();
 
-  const sampleSchedule = ALL_SCHEDULES_DETAILS.find((s) => s.id === id);
+  const {
+    currentScheduleDetail, // Use the specific detail state from Zustand
+    loading,
+    error,
+    fetchScheduleById, // Use the specific fetch action
+    updateTaskStatus,
+    startVisit,
+  } = useScheduleStore();
 
-  const handleClockIn = () => {
-    if (sampleSchedule) {
-      console.log(`Clocking in to visit: ${sampleSchedule.id}`);
-      navigate("/");
+  const [tasks, setTasks] = useState<Task[]>([]); // Local state for tasks to manage checkboxes
+  const isActionLoading = loading.action || loading.currentScheduleDetail; // Include detail loading
+
+  useEffect(() => {
+    if (id) {
+      fetchScheduleById(id); // Fetch the specific schedule when ID changes
+    }
+  }, [id, fetchScheduleById]);
+
+  useEffect(() => {
+    // Update local tasks state when currentScheduleDetail changes
+    if (currentScheduleDetail) {
+      setTasks(currentScheduleDetail.tasks || []);
+    } else {
+      setTasks([]); // Clear tasks if no schedule is loaded
+    }
+  }, [currentScheduleDetail]);
+
+  const handleGoBack = () => {
+    navigate(-1); // Go back to the previous page in history
+  };
+
+  const handleTaskCompletion = async (taskId: string, completed: boolean) => {
+    if (!currentScheduleDetail) return;
+    await updateTaskStatus(currentScheduleDetail.id, taskId, completed);
+    // After successful update, re-fetch the specific schedule to ensure UI is consistent with backend
+    if (id) {
+      fetchScheduleById(id);
     }
   };
 
-  const handleGoBack = () => {
-    navigate(-1);
+  // Function to get current geolocation or fallback
+  const getCurrentLocation = (): Promise<{
+    latitude: number;
+    longitude: number;
+    address: string;
+  }> => {
+    return new Promise((resolve) => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            console.log("Geolocation successful:", position.coords);
+            resolve({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              address: "Current Geolocation (Approximate)", // You might use a reverse geocoding API here
+            });
+          },
+          (error) => {
+            console.error("Geolocation error:", error);
+            // Fallback to a default location if geolocation fails
+            resolve({
+              latitude: -6.2088, // Default latitude (e.g., Jakarta)
+              longitude: 106.8456, // Default longitude (e.g., Jakarta)
+              address: "Fallback Location (Jakarta, Indonesia)",
+            });
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      } else {
+        console.warn("Geolocation is not supported by this browser.");
+        // Fallback to a default location if geolocation is not supported
+        resolve({
+          latitude: -6.2088, // Default latitude (e.g., Jakarta)
+          longitude: 106.8456, // Default longitude (e.g., Jakarta)
+          address: "Fallback Location (Jakarta, Indonesia)",
+        });
+      }
+    });
   };
 
-  if (!sampleSchedule) {
+  const handleClockIn = async () => {
+    if (!currentScheduleDetail) return;
+
+    // Get current location using Geolocation API or fallback
+    const currentLocation = await getCurrentLocation();
+
+    await startVisit(currentScheduleDetail.id, currentLocation);
+    // After successful clock-in, re-fetch the specific schedule to update UI
+    if (id) {
+      fetchScheduleById(id);
+    }
+    navigate(`/clock-out/${currentScheduleDetail.id}`); // Navigate to clock-out page
+  };
+
+  // --- Loading, Error, Not Found States (Preserving original structure) ---
+  if (loading.currentScheduleDetail) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading schedule details...</p>
+      </div>
+    );
+  }
+
+  if (error.currentScheduleDetail) {
+    return (
+      <div
+        className="container mx-auto px-4 py-8 text-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+        role="alert"
+      >
+        <strong className="font-bold">Error!</strong>
+        <span className="block sm:inline"> {error.currentScheduleDetail}</span>
+        <p className="mt-2">Please try refreshing the page.</p>
+      </div>
+    );
+  }
+
+  if (!currentScheduleDetail) {
     return (
       <div className="container mx-auto px-4 py-8 text-center text-red-600">
         <h2 className="text-3xl font-bold mb-4">Schedule Not Found</h2>
@@ -107,8 +139,12 @@ const ScheduleDetailsPage: React.FC = () => {
     );
   }
 
+  // Use currentScheduleDetail for rendering, mapping to original sampleSchedule structure
+  const schedule = currentScheduleDetail; // Renamed for convenience to match original JSX
+
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Back Button */}
       <button
         onClick={handleGoBack}
         className="flex items-center text-gray-700 hover:text-gray-900 mb-6 text-lg font-semibold"
@@ -133,16 +169,19 @@ const ScheduleDetailsPage: React.FC = () => {
       <div className="bg-white p-6 md:p-8 rounded-lg shadow-xl border border-gray-200">
         <div className="flex flex-col items-center text-center mb-6">
           <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
-            {sampleSchedule.serviceName}
+            {schedule.service_name}
           </h3>
           <div className="flex items-center mb-4">
             <img
-              src={sampleSchedule.clientAvatar}
-              alt={`${sampleSchedule.clientName} Avatar`}
+              src={
+                schedule.client_avatar ||
+                "https://placehold.co/48x48/E0E7FF/4F46E5?text=NA"
+              }
+              alt={`${schedule.client_name} Avatar`}
               className="w-14 h-14 md:w-16 md:h-16 rounded-full mr-4 border-2 border-indigo-300"
             />
             <span className="text-lg md:text-xl font-semibold text-gray-800">
-              {sampleSchedule.clientName}
+              {schedule.client_name}
             </span>
           </div>
           <div className="flex flex-col sm:flex-row items-center text-gray-600 text-sm space-y-2 sm:space-y-0 sm:space-x-4">
@@ -161,7 +200,7 @@ const ScheduleDetailsPage: React.FC = () => {
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 ></path>
               </svg>
-              <span>{sampleSchedule.date}</span>
+              <span>{schedule.shift_date}</span>
             </div>
             <span className="hidden sm:inline-block text-xl font-bold text-gray-400">
               |
@@ -181,7 +220,9 @@ const ScheduleDetailsPage: React.FC = () => {
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 ></path>
               </svg>
-              <span>{sampleSchedule.timeRange}</span>
+              <span>
+                {schedule.start_time} - {schedule.end_time}
+              </span>
             </div>
           </div>
         </div>
@@ -191,12 +232,11 @@ const ScheduleDetailsPage: React.FC = () => {
             <h4 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
               Client Contact:
             </h4>
-            <p className="text-gray-700 text-sm md:text-base">
-              {sampleSchedule.clientContactEmail}
-            </p>
-            <p className="text-gray-700 text-sm md:text-base">
-              {sampleSchedule.clientContactPhone}
-            </p>
+            {/* These fields are not in your current Schedule model. Using N/A placeholders. */}
+            <p className="text-gray-700 text-sm md:text-base">N/A</p>{" "}
+            {/* Placeholder for email */}
+            <p className="text-gray-700 text-sm md:text-base">N/A</p>{" "}
+            {/* Placeholder for phone */}
           </div>
 
           <div className="mb-6">
@@ -204,10 +244,11 @@ const ScheduleDetailsPage: React.FC = () => {
               Address:
             </h4>
             <p className="text-gray-700 text-sm md:text-base">
-              {sampleSchedule.address.street}
+              {schedule.location.address}
             </p>
+            {/* Using lat/long for the second line to maintain two lines as in original */}
             <p className="text-gray-700 text-sm md:text-base">
-              {sampleSchedule.address.cityStateZip}
+              ({schedule.location.latitude}, {schedule.location.longitude})
             </p>
           </div>
 
@@ -216,15 +257,43 @@ const ScheduleDetailsPage: React.FC = () => {
               Tasks:
             </h4>
             <div className="space-y-3">
-              {sampleSchedule.tasks.map((task, index) => (
-                <div
-                  key={index}
-                  className="bg-gray-50 p-4 rounded-md border border-gray-100 text-gray-700 text-sm md:text-base"
-                >
-                  <span className="font-semibold">Activity Name A</span>
-                  <p className="mt-1">{task}</p>
-                </div>
-              ))}
+              {tasks.length === 0 ? (
+                <p className="text-gray-600 text-sm">
+                  No tasks for this schedule.
+                </p>
+              ) : (
+                tasks.map((task) => (
+                  <div
+                    key={task.id} // Use task.id for key
+                    className="bg-gray-50 p-4 rounded-md border border-gray-100 text-gray-700 text-sm md:text-base"
+                  >
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={task.completed}
+                        onChange={(e) =>
+                          handleTaskCompletion(task.id, e.target.checked)
+                        }
+                        disabled={
+                          isActionLoading || schedule.status !== "in_progress"
+                        } // Disable if not in_progress or action loading
+                        className="form-checkbox h-5 w-5 text-indigo-600 rounded"
+                      />
+                      <span
+                        className={`ml-3 ${task.completed ? "line-through text-gray-500" : "text-gray-700"}`}
+                      >
+                        {/* Removed static "Activity Name A" */}
+                        {task.description}
+                      </span>
+                    </label>
+                    {task.reason && (
+                      <span className="text-xs text-red-500 ml-4">
+                        Reason: {task.reason}
+                      </span>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -233,18 +302,38 @@ const ScheduleDetailsPage: React.FC = () => {
               Service Notes:
             </h4>
             <div className="bg-gray-50 p-4 rounded-md border border-gray-100 text-gray-700 text-sm md:text-base">
-              <p>{sampleSchedule.serviceNotes}</p>
+              <p>{schedule.service_notes}</p>
             </div>
           </div>
         </div>
 
+        {/* Action Button based on status (Preserving original button's look) */}
         <div className="mt-8 text-center">
-          <button
-            onClick={handleClockIn}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 md:px-8 rounded-lg shadow-md transition-colors duration-200 w-full md:w-auto"
-          >
-            Clock In Now
-          </button>
+          {schedule.status === "scheduled" && (
+            <button
+              onClick={handleClockIn}
+              disabled={isActionLoading}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 md:px-8 rounded-lg shadow-md transition-colors duration-200 w-full md:w-auto"
+            >
+              {isActionLoading ? "Clocking In..." : "Clock In Now"}
+            </button>
+          )}
+          {schedule.status === "in_progress" && (
+            <button
+              onClick={() => navigate(`/clock-out/${schedule.id}`)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 md:px-8 rounded-lg shadow-md transition-colors duration-200 w-full md:w-auto"
+            >
+              Continue Clock-Out
+            </button>
+          )}
+          {schedule.status === "completed" && (
+            <button
+              onClick={handleGoBack} // Or navigate to a report view if implemented
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 md:px-8 rounded-lg shadow-md transition-colors duration-200 w-full md:w-auto"
+            >
+              Back to Dashboard
+            </button>
+          )}
         </div>
       </div>
     </div>
