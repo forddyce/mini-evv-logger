@@ -49,11 +49,11 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	apiRouter.HandleFunc("/schedules", scheduleHandler.GetSchedules).Methods("GET")
 	apiRouter.HandleFunc("/schedules/today", scheduleHandler.GetTodaySchedules).Methods("GET")
+	apiRouter.HandleFunc("/schedules/stats", scheduleHandler.GetScheduleStats).Methods("GET")
+	apiRouter.HandleFunc("/schedules/reset", scheduleHandler.ResetSampleData).Methods("POST")
 	apiRouter.HandleFunc("/schedules/{id}", scheduleHandler.GetScheduleByID).Methods("GET")
 	apiRouter.HandleFunc("/schedules/{id}/start", scheduleHandler.StartVisit).Methods("POST")
 	apiRouter.HandleFunc("/schedules/{id}/end", scheduleHandler.EndVisit).Methods("POST")
-	apiRouter.HandleFunc("/schedules/stats", scheduleHandler.GetScheduleStats).Methods("GET")
-	apiRouter.HandleFunc("/schedules/reset", scheduleHandler.ResetSampleData).Methods("POST")
 
 	apiRouter.HandleFunc("/tasks/{taskId}/update", scheduleHandler.UpdateTaskStatus).Methods("POST")
 

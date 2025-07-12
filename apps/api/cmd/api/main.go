@@ -48,11 +48,11 @@ func init() {
 	apiRouter := localRouter.PathPrefix("/api").Subrouter()
 	apiRouter.HandleFunc("/schedules", localScheduleHandler.GetSchedules).Methods("GET")
 	apiRouter.HandleFunc("/schedules/today", localScheduleHandler.GetTodaySchedules).Methods("GET")
+	apiRouter.HandleFunc("/schedules/stats", localScheduleHandler.GetScheduleStats).Methods("GET")
+	apiRouter.HandleFunc("/schedules/reset", localScheduleHandler.ResetSampleData).Methods("POST")
 	apiRouter.HandleFunc("/schedules/{id}", localScheduleHandler.GetScheduleByID).Methods("GET")
 	apiRouter.HandleFunc("/schedules/{id}/start", localScheduleHandler.StartVisit).Methods("POST")
 	apiRouter.HandleFunc("/schedules/{id}/end", localScheduleHandler.EndVisit).Methods("POST")
-	apiRouter.HandleFunc("/schedules/stats", localScheduleHandler.GetScheduleStats).Methods("GET")
-	apiRouter.HandleFunc("/schedules/reset", localScheduleHandler.ResetSampleData).Methods("POST")
 	apiRouter.HandleFunc("/tasks/{taskId}/update", localScheduleHandler.UpdateTaskStatus).Methods("POST")
 
 	localRouter.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
