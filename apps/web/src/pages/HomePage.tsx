@@ -172,26 +172,6 @@ const HomePage: React.FC = () => {
           >
             {isActionLoading ? "Resetting..." : "Reset Data"}
           </button>
-          <button
-            onClick={() => console.log("Add New clicked")}
-            className="text-blue-600 hover:text-blue-800 font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200"
-          >
-            <svg
-              className="w-5 h-5 inline-block mr-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              ></path>
-            </svg>
-            Add New
-          </button>
         </div>
       </div>
 

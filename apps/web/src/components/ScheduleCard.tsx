@@ -104,7 +104,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
 
   return (
     <div
-      className={`bg-white p-6 rounded-lg shadow-md border border-gray-200 ${
+      className={`bg-white p-6 rounded-[16px] border border-gray-200 ${
         status === "scheduled" ||
         status === "in_progress" ||
         status === "completed"
@@ -176,8 +176,11 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
         <span>{location}</span>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 text-sm text-gray-700 items-center border-t border-b border-gray-200 py-3 mb-4">
-        <div className="flex items-center">
+      <div
+        className="grid grid-cols-3 gap-4 text-sm text-gray-700 items-center p-3 mb-4 rounded-[8px]"
+        style={{ backgroundColor: "#2DA6FF14" }}
+      >
+        <div className="flex items-center justify-center">
           <svg
             className="w-4 h-4 mr-1 text-gray-500"
             fill="none"
@@ -197,7 +200,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
         <div className="text-center">
           <span className="text-xl font-bold text-gray-400">|</span>
         </div>
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-center">
           <svg
             className="w-4 h-4 mr-1 text-gray-500"
             fill="none"

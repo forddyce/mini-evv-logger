@@ -214,7 +214,7 @@ const ClockOutPage: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <button
         onClick={handleGoBack}
-        className="flex items-center text-gray-700 hover:text-gray-900 mb-6 text-lg font-semibold"
+        className="flex items-center text-gray-700 hover:text-gray-900 mb-6 text-lg font-semibold hover:cursor-pointer"
       >
         <svg
           className="w-6 h-6 mr-2"

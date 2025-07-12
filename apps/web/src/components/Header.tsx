@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import styles from "./Header.module.scss";
 
 const Header: React.FC = () => {
+  const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleLogout = () => {
@@ -15,8 +18,13 @@ const Header: React.FC = () => {
       </div>
 
       <div className="hidden md:flex items-center">
-        <div className="w-8 h-8 bg-blue-500 rounded-full mr-2"></div>
-        <span className="text-xl font-bold text-gray-800">Careviah</span>
+        <img
+          className={`${styles.logo} hover:cursor-pointer`}
+          src="/logo.png"
+          onClick={() => {
+            navigate("/");
+          }}
+        />
       </div>
 
       <div className="relative">
@@ -26,16 +34,14 @@ const Header: React.FC = () => {
         >
           <div className="relative">
             <img
-              src="https://placehold.co/40x40/E0E7FF/4F46E5?text=AA"
+              src="/avatar.jpg"
               alt="Admin A Avatar"
-              className="w-10 h-10 rounded-full border-2 border-indigo-300"
+              className="w-10 h-10 rounded-full"
             />
           </div>
-          <div className="hidden md:flex flex-col text-right">
+          <div className="hidden md:flex flex-col text-left">
             <span className="text-sm font-semibold text-gray-800">Admin A</span>
-            <span className="text-xs text-gray-500">
-              Administered Careviah EO
-            </span>
+            <span className="text-xs text-gray-500">Admin@healthcare.io</span>
           </div>
           <svg
             className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
