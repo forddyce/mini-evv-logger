@@ -20,7 +20,7 @@ const Header: React.FC = () => {
       <div className="hidden md:flex items-center">
         <img
           className={`${styles.logo} hover:cursor-pointer`}
-          src="/logo.png"
+          src="/assets/logo.png"
           onClick={() => {
             navigate("/");
           }}
@@ -34,7 +34,7 @@ const Header: React.FC = () => {
         >
           <div className="relative">
             <img
-              src="/avatar.jpg"
+              src="/assets/avatar.jpg"
               alt="Admin A Avatar"
               className="w-10 h-10 rounded-full"
             />
