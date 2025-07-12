@@ -1,5 +1,7 @@
 # Mini EVV Logger Application Setup Guide
 
+[Live Demo](https://evv-logger-forddyces-projects.vercel.app/)
+
 This guide provides step-by-step instructions to set up and run the Mini EVV Logger application on a new development machine. The application consists of a Go backend API and a React frontend. Supabase is used as the database.
 
 ## Prerequisites

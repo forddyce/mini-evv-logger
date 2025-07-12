@@ -9,7 +9,10 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "contact": {
+            "name": "Fordyce Gozali",
+            "email": "forddyce92@gmail.com"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -426,19 +429,19 @@ const docTemplate = `{
         "models.Schedule": {
             "type": "object",
             "properties": {
-                "clientAvatar": {
+                "client_avatar": {
                     "type": "string"
                 },
-                "clientId": {
+                "client_id": {
                     "type": "string"
                 },
-                "clientName": {
+                "client_name": {
                     "type": "string"
                 },
-                "endLocation": {
+                "end_location": {
                     "$ref": "#/definitions/models.Location"
                 },
-                "endTime": {
+                "end_time": {
                     "type": "string"
                 },
                 "id": {
@@ -447,19 +450,19 @@ const docTemplate = `{
                 "location": {
                     "$ref": "#/definitions/models.Location"
                 },
-                "serviceName": {
+                "service_name": {
                     "type": "string"
                 },
-                "serviceNotes": {
+                "service_notes": {
                     "type": "string"
                 },
-                "shiftDate": {
+                "shift_date": {
                     "type": "string"
                 },
-                "startLocation": {
+                "start_location": {
                     "$ref": "#/definitions/models.Location"
                 },
-                "startTime": {
+                "start_time": {
                     "type": "string"
                 },
                 "status": {
@@ -471,10 +474,10 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.Task"
                     }
                 },
-                "visitEnd": {
+                "visit_end": {
                     "type": "string"
                 },
-                "visitStart": {
+                "visit_start": {
                     "type": "string"
                 }
             }
@@ -511,7 +514,7 @@ const docTemplate = `{
                 "reason": {
                     "type": "string"
                 },
-                "scheduleId": {
+                "schedule_id": {
                     "type": "string"
                 }
             }
@@ -521,12 +524,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
-	BasePath:         "",
-	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Version:          "1.0",
+	Host:             "example.com",
+	BasePath:         "/api",
+	Schemes:          []string{"http", "https"},
+	Title:            "EVV Logger API",
+	Description:      "This is the API for the EVV Logger application.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

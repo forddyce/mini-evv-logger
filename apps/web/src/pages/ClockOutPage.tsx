@@ -1,33 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ClockOutSuccessModal from "../components/ClockOutSuccessModal";
-import { useScheduleStore } from "../store/useScheduleStore"; // Import Zustand store
-import type { Schedule, Task } from "../types/api"; // Import types
+import { useScheduleStore } from "../store/useScheduleStore";
+import type { Schedule, Task } from "../types/api";
 
 const ClockOutPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>(); // Get schedule ID from URL
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const {
-    currentScheduleDetail, // The schedule fetched for details page, should be 'in_progress' here
+    currentScheduleDetail,
     loading,
     error,
-    fetchScheduleById, // To fetch the schedule
+    fetchScheduleById,
     updateTaskStatus,
-    endVisit, // To clock out
+    endVisit,
   } = useScheduleStore();
 
-  const [currentVisit, setCurrentVisit] = useState<Schedule | null>(null); // State to hold the active visit data
+  const [currentVisit, setCurrentVisit] = useState<Schedule | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [addReason, setAddReason] = useState<string>("");
-  const [elapsedTime, setElapsedTime] = useState<number>(0); // Time in seconds
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
   const isActionLoading = loading.action || loading.currentScheduleDetail;
 
   useEffect(() => {
     if (id) {
-      fetchScheduleById(id); // Fetch the specific schedule
+      fetchScheduleById(id);
     }
   }, [id, fetchScheduleById]);
 
@@ -40,7 +40,6 @@ const ClockOutPage: React.FC = () => {
       setCurrentVisit(currentScheduleDetail);
       setTasks(currentScheduleDetail.tasks || []);
 
-      // Initialize timer if visitStart is available
       if (currentScheduleDetail.visit_start) {
         const visitStartTime = new Date(
           currentScheduleDetail.visit_start
@@ -48,18 +47,17 @@ const ClockOutPage: React.FC = () => {
         const timer = setInterval(() => {
           setElapsedTime(Math.floor((Date.now() - visitStartTime) / 1000));
         }, 1000);
-        return () => clearInterval(timer); // Cleanup timer on unmount
+        return () => clearInterval(timer);
       }
     } else if (
       currentScheduleDetail &&
       currentScheduleDetail.id === id &&
       currentScheduleDetail.status !== "in_progress"
     ) {
-      // If schedule is found but not in_progress, redirect or show error
       console.warn(
         `Schedule ${id} is not in_progress. Status: ${currentScheduleDetail.status}`
       );
-      // navigate('/'); // Redirect to home if not in_progress
+      // navigate('/');
     }
   }, [currentScheduleDetail, id, navigate]);
 
@@ -91,7 +89,6 @@ const ClockOutPage: React.FC = () => {
     return durationString;
   };
 
-  // Function to get current geolocation or fallback
   const getCurrentLocation = (): Promise<{
     latitude: number;
     longitude: number;
@@ -105,15 +102,14 @@ const ClockOutPage: React.FC = () => {
             resolve({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
-              address: "Current Geolocation (Approximate)", // You might use a reverse geocoding API here
+              address: "Current Geolocation (Approximate)", // todo: reverse geocoding api to get address
             });
           },
           (error) => {
             console.error("Geolocation error:", error);
-            // Fallback to a default location if geolocation fails
             resolve({
-              latitude: -6.2088, // Default latitude (e.g., Jakarta)
-              longitude: 106.8456, // Default longitude (e.g., Jakarta)
+              latitude: -6.2088,
+              longitude: 106.8456,
               address: "Fallback Location (Jakarta, Indonesia)",
             });
           },
@@ -121,10 +117,9 @@ const ClockOutPage: React.FC = () => {
         );
       } else {
         console.warn("Geolocation is not supported by this browser.");
-        // Fallback to a default location if geolocation is not supported
         resolve({
-          latitude: -6.2088, // Default latitude (e.g., Jakarta)
-          longitude: 106.8456, // Default longitude (e.g., Jakarta)
+          latitude: -6.2088,
+          longitude: 106.8456,
           address: "Fallback Location (Jakarta, Indonesia)",
         });
       }
@@ -133,15 +128,17 @@ const ClockOutPage: React.FC = () => {
 
   const handleTaskCompletion = async (taskId: string, completed: boolean) => {
     if (!currentVisit) return;
-    // Update local state immediately for responsiveness
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
         task.id === taskId ? { ...task, completed: completed } : task
       )
     );
-    // Send update to API
-    await updateTaskStatus(currentVisit.id, taskId, completed);
-    // Re-fetch current schedule to ensure store is updated
+    await updateTaskStatus(
+      currentVisit.id,
+      taskId,
+      completed,
+      "Please add reason"
+    );
     if (id) {
       fetchScheduleById(id);
     }
@@ -150,31 +147,19 @@ const ClockOutPage: React.FC = () => {
   const handleClockOut = async () => {
     if (!currentVisit) return;
 
-    // Get current location using Geolocation API or fallback
     const currentLocation = await getCurrentLocation();
-
-    // First, ensure all tasks are updated with their final status and reasons
-    // This part requires a loop or a batch update if your API supports it.
-    // For simplicity, we'll just send the main clock-out and rely on previous task updates.
-    // If a task was marked 'No' and a reason was added, ensure that reason is sent.
-    // (Note: The current updateTaskStatus only sends 'completed', not 'reason' for existing tasks.
-    // You might need to extend updateTaskStatus or add a new API endpoint for final task submission with reasons.)
-
-    // Call the endVisit action from Zustand
     await endVisit(currentVisit.id, currentLocation);
 
-    // After successful clock-out, show the success modal
     setShowSuccessModal(true);
   };
 
   const handleGoHomeFromModal = () => {
-    setShowSuccessModal(false); // Close modal
-    navigate("/"); // Navigate to home page
+    setShowSuccessModal(false);
+    navigate("/");
   };
 
   const handleCancelClockIn = () => {
     console.log(`Cancelling clock-in for visit: ${currentVisit?.id}`);
-    // In a real app, you might have an API call to cancel the in_progress status
     navigate("/");
   };
 
@@ -182,7 +167,6 @@ const ClockOutPage: React.FC = () => {
     navigate(-1);
   };
 
-  // --- Loading, Error, Not Found States (Preserving original structure) ---
   if (loading.currentScheduleDetail) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
@@ -205,7 +189,6 @@ const ClockOutPage: React.FC = () => {
     );
   }
 
-  // If schedule is not found or not in 'in_progress' status
   if (
     !currentVisit ||
     currentVisit.id !== id ||
@@ -229,7 +212,6 @@ const ClockOutPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Back Button */}
       <button
         onClick={handleGoBack}
         className="flex items-center text-gray-700 hover:text-gray-900 mb-6 text-lg font-semibold"
@@ -251,9 +233,7 @@ const ClockOutPage: React.FC = () => {
         Clock-Out
       </button>
 
-      {/* Main Content Card */}
       <div className="bg-white p-6 md:p-8 rounded-lg shadow-xl border border-gray-200">
-        {/* Timer, Service Name & Client Info */}
         <div className="flex flex-col items-center text-center mb-6">
           <span className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             {formatTime(elapsedTime)}
@@ -290,7 +270,6 @@ const ClockOutPage: React.FC = () => {
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 ></path>
               </svg>
-              {/* CORRECTED: Use startTime and endTime */}
               <span>
                 {currentVisit.start_time} - {currentVisit.end_time}
               </span>
@@ -298,7 +277,6 @@ const ClockOutPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Tasks Section */}
         <div className="border-t border-gray-200 pt-6 mt-6">
           <h4 className="text-base md:text-lg font-semibold text-gray-800 mb-3">
             Tasks:
@@ -315,7 +293,7 @@ const ClockOutPage: React.FC = () => {
                 <div className="flex space-x-4">
                   <button
                     onClick={() => handleTaskCompletion(task.id, true)}
-                    disabled={isActionLoading} // Disable buttons during action
+                    disabled={isActionLoading}
                     className={`px-4 py-2 rounded-lg font-semibold transition-colors duration-200 text-sm md:text-base ${
                       task.completed
                         ? "bg-emerald-600 text-white"
@@ -326,7 +304,7 @@ const ClockOutPage: React.FC = () => {
                   </button>
                   <button
                     onClick={() => handleTaskCompletion(task.id, false)}
-                    disabled={isActionLoading} // Disable buttons during action
+                    disabled={isActionLoading}
                     className={`px-4 py-2 rounded-lg font-semibold transition-colors duration-200 text-sm md:text-base ${
                       !task.completed
                         ? "bg-red-600 text-white"
@@ -336,15 +314,13 @@ const ClockOutPage: React.FC = () => {
                     No
                   </button>
                 </div>
-                {/* Optional: Input for reason if task is not completed */}
                 {!task.completed && (
                   <textarea
                     placeholder="Add reason for not completing task..."
                     className="w-full p-2 mt-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 resize-y text-sm md:text-base"
                     rows={2}
-                    value={task.reason || ""} // Bind value to task.reason
+                    value={task.reason || ""}
                     onChange={(e) => {
-                      // Update local task state with reason
                       setTasks((prevTasks) =>
                         prevTasks.map((t) =>
                           t.id === task.id
@@ -352,14 +328,12 @@ const ClockOutPage: React.FC = () => {
                             : t
                         )
                       );
-                      // You might want to debounce or send this to API on blur/clock-out
                     }}
                     disabled={isActionLoading}
                   ></textarea>
                 )}
               </div>
             ))}
-            {/* "Add new task" button (functionality not implemented in API yet) */}
             <button className="flex items-center text-blue-600 hover:text-blue-800 font-semibold text-sm md:text-base mt-2">
               <svg
                 className="w-5 h-5 inline-block mr-1"
@@ -388,13 +362,11 @@ const ClockOutPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Clock-in Location Section */}
         <div className="border-t border-gray-200 pt-6 mt-6">
           <h4 className="text-base md:text-lg font-semibold text-gray-800 mb-3">
             Clock-in Location:
           </h4>
           <div className="bg-gray-50 p-4 rounded-md border border-gray-100 flex items-center space-x-4">
-            {/* Placeholder for Map */}
             <div className="w-20 h-20 md:w-24 md:h-24 bg-gray-300 rounded-md flex items-center justify-center text-gray-600 text-xs">
               Map Placeholder
             </div>
@@ -410,7 +382,6 @@ const ClockOutPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Service Notes Section */}
         <div className="border-t border-gray-200 pt-6 mt-6">
           <h4 className="text-base md:text-lg font-semibold text-gray-800 mb-3">
             Service Notes:
@@ -420,7 +391,6 @@ const ClockOutPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="mt-8 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
           <button
             onClick={handleCancelClockIn}
@@ -439,15 +409,14 @@ const ClockOutPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Clock-Out Success Modal */}
       {showSuccessModal && (
         <ClockOutSuccessModal
           isOpen={showSuccessModal}
-          onClose={() => setShowSuccessModal(false)} // Allows closing by clicking X
+          onClose={() => setShowSuccessModal(false)}
           onGoHome={handleGoHomeFromModal}
-          date={currentVisit.shift_date} // Pass actual date from currentVisit
-          timeRange={`${currentVisit.start_time} - ${currentVisit.end_time}`} // Pass actual timeRange from currentVisit
-          duration={formatDuration(elapsedTime)} // Pass calculated duration
+          date={currentVisit.shift_date}
+          timeRange={`${currentVisit.start_time} - ${currentVisit.end_time}`}
+          duration={formatDuration(elapsedTime)}
         />
       )}
     </div>

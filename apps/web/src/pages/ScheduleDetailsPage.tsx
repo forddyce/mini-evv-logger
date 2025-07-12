@@ -1,53 +1,55 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useScheduleStore } from "../store/useScheduleStore"; // Import the Zustand store
-import type { Schedule, Task } from "../types/api"; // Import types
+import { useScheduleStore } from "../store/useScheduleStore";
+import type { Task } from "../types/api";
 
 const ScheduleDetailsPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>(); // Get schedule ID from URL
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const {
-    currentScheduleDetail, // Use the specific detail state from Zustand
+    currentScheduleDetail,
     loading,
     error,
-    fetchScheduleById, // Use the specific fetch action
+    fetchScheduleById,
     updateTaskStatus,
     startVisit,
   } = useScheduleStore();
 
-  const [tasks, setTasks] = useState<Task[]>([]); // Local state for tasks to manage checkboxes
-  const isActionLoading = loading.action || loading.currentScheduleDetail; // Include detail loading
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const isActionLoading = loading.action || loading.currentScheduleDetail;
 
   useEffect(() => {
     if (id) {
-      fetchScheduleById(id); // Fetch the specific schedule when ID changes
+      fetchScheduleById(id);
     }
   }, [id, fetchScheduleById]);
 
   useEffect(() => {
-    // Update local tasks state when currentScheduleDetail changes
     if (currentScheduleDetail) {
       setTasks(currentScheduleDetail.tasks || []);
     } else {
-      setTasks([]); // Clear tasks if no schedule is loaded
+      setTasks([]);
     }
   }, [currentScheduleDetail]);
 
   const handleGoBack = () => {
-    navigate(-1); // Go back to the previous page in history
+    navigate(-1);
   };
 
   const handleTaskCompletion = async (taskId: string, completed: boolean) => {
     if (!currentScheduleDetail) return;
-    await updateTaskStatus(currentScheduleDetail.id, taskId, completed);
-    // After successful update, re-fetch the specific schedule to ensure UI is consistent with backend
+    await updateTaskStatus(
+      currentScheduleDetail.id,
+      taskId,
+      completed,
+      "placeholder for reason"
+    );
     if (id) {
       fetchScheduleById(id);
     }
   };
 
-  // Function to get current geolocation or fallback
   const getCurrentLocation = (): Promise<{
     latitude: number;
     longitude: number;
@@ -61,15 +63,14 @@ const ScheduleDetailsPage: React.FC = () => {
             resolve({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
-              address: "Current Geolocation (Approximate)", // You might use a reverse geocoding API here
+              address: "Current Geolocation (Approximate)", // todo: reverse geocoding api to get address
             });
           },
           (error) => {
             console.error("Geolocation error:", error);
-            // Fallback to a default location if geolocation fails
             resolve({
-              latitude: -6.2088, // Default latitude (e.g., Jakarta)
-              longitude: 106.8456, // Default longitude (e.g., Jakarta)
+              latitude: -6.2088,
+              longitude: 106.8456,
               address: "Fallback Location (Jakarta, Indonesia)",
             });
           },
@@ -77,10 +78,9 @@ const ScheduleDetailsPage: React.FC = () => {
         );
       } else {
         console.warn("Geolocation is not supported by this browser.");
-        // Fallback to a default location if geolocation is not supported
         resolve({
-          latitude: -6.2088, // Default latitude (e.g., Jakarta)
-          longitude: 106.8456, // Default longitude (e.g., Jakarta)
+          latitude: -6.2088,
+          longitude: 106.8456,
           address: "Fallback Location (Jakarta, Indonesia)",
         });
       }
@@ -90,18 +90,15 @@ const ScheduleDetailsPage: React.FC = () => {
   const handleClockIn = async () => {
     if (!currentScheduleDetail) return;
 
-    // Get current location using Geolocation API or fallback
     const currentLocation = await getCurrentLocation();
 
     await startVisit(currentScheduleDetail.id, currentLocation);
-    // After successful clock-in, re-fetch the specific schedule to update UI
     if (id) {
       fetchScheduleById(id);
     }
-    navigate(`/clock-out/${currentScheduleDetail.id}`); // Navigate to clock-out page
+    navigate(`/clock-out/${currentScheduleDetail.id}`);
   };
 
-  // --- Loading, Error, Not Found States (Preserving original structure) ---
   if (loading.currentScheduleDetail) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
@@ -139,12 +136,10 @@ const ScheduleDetailsPage: React.FC = () => {
     );
   }
 
-  // Use currentScheduleDetail for rendering, mapping to original sampleSchedule structure
-  const schedule = currentScheduleDetail; // Renamed for convenience to match original JSX
+  const schedule = currentScheduleDetail;
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Back Button */}
       <button
         onClick={handleGoBack}
         className="flex items-center text-gray-700 hover:text-gray-900 mb-6 text-lg font-semibold"
@@ -232,11 +227,8 @@ const ScheduleDetailsPage: React.FC = () => {
             <h4 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
               Client Contact:
             </h4>
-            {/* These fields are not in your current Schedule model. Using N/A placeholders. */}
             <p className="text-gray-700 text-sm md:text-base">N/A</p>{" "}
-            {/* Placeholder for email */}
             <p className="text-gray-700 text-sm md:text-base">N/A</p>{" "}
-            {/* Placeholder for phone */}
           </div>
 
           <div className="mb-6">
@@ -246,7 +238,6 @@ const ScheduleDetailsPage: React.FC = () => {
             <p className="text-gray-700 text-sm md:text-base">
               {schedule.location.address}
             </p>
-            {/* Using lat/long for the second line to maintain two lines as in original */}
             <p className="text-gray-700 text-sm md:text-base">
               ({schedule.location.latitude}, {schedule.location.longitude})
             </p>
@@ -264,7 +255,7 @@ const ScheduleDetailsPage: React.FC = () => {
               ) : (
                 tasks.map((task) => (
                   <div
-                    key={task.id} // Use task.id for key
+                    key={task.id}
                     className="bg-gray-50 p-4 rounded-md border border-gray-100 text-gray-700 text-sm md:text-base"
                   >
                     <label className="flex items-center cursor-pointer">
@@ -276,13 +267,12 @@ const ScheduleDetailsPage: React.FC = () => {
                         }
                         disabled={
                           isActionLoading || schedule.status !== "in_progress"
-                        } // Disable if not in_progress or action loading
+                        }
                         className="form-checkbox h-5 w-5 text-indigo-600 rounded"
                       />
                       <span
                         className={`ml-3 ${task.completed ? "line-through text-gray-500" : "text-gray-700"}`}
                       >
-                        {/* Removed static "Activity Name A" */}
                         {task.description}
                       </span>
                     </label>
@@ -307,7 +297,6 @@ const ScheduleDetailsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Action Button based on status (Preserving original button's look) */}
         <div className="mt-8 text-center">
           {schedule.status === "scheduled" && (
             <button
@@ -328,7 +317,7 @@ const ScheduleDetailsPage: React.FC = () => {
           )}
           {schedule.status === "completed" && (
             <button
-              onClick={handleGoBack} // Or navigate to a report view if implemented
+              onClick={handleGoBack}
               className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 md:px-8 rounded-lg shadow-md transition-colors duration-200 w-full md:w-auto"
             >
               Back to Dashboard

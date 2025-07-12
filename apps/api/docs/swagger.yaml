@@ -1,3 +1,4 @@
+basePath: /api
 definitions:
   handler.EndVisitRequest:
     properties:
@@ -36,29 +37,29 @@ definitions:
     type: object
   models.Schedule:
     properties:
-      clientAvatar:
+      client_avatar:
         type: string
-      clientId:
+      client_id:
         type: string
-      clientName:
+      client_name:
         type: string
-      endLocation:
+      end_location:
         $ref: '#/definitions/models.Location'
-      endTime:
+      end_time:
         type: string
       id:
         type: string
       location:
         $ref: '#/definitions/models.Location'
-      serviceName:
+      service_name:
         type: string
-      serviceNotes:
+      service_notes:
         type: string
-      shiftDate:
+      shift_date:
         type: string
-      startLocation:
+      start_location:
         $ref: '#/definitions/models.Location'
-      startTime:
+      start_time:
         type: string
       status:
         type: string
@@ -66,9 +67,9 @@ definitions:
         items:
           $ref: '#/definitions/models.Task'
         type: array
-      visitEnd:
+      visit_end:
         type: string
-      visitStart:
+      visit_start:
         type: string
     type: object
   models.ScheduleStats:
@@ -92,11 +93,17 @@ definitions:
         type: string
       reason:
         type: string
-      scheduleId:
+      schedule_id:
         type: string
     type: object
+host: example.com
 info:
-  contact: {}
+  contact:
+    email: forddyce92@gmail.com
+    name: Fordyce Gozali
+  description: This is the API for the EVV Logger application.
+  title: EVV Logger API
+  version: "1.0"
 paths:
   /schedules:
     get:
@@ -332,4 +339,7 @@ paths:
               type: string
             type: object
       summary: Update task status
+schemes:
+- http
+- https
 swagger: "2.0"

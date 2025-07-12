@@ -3,14 +3,13 @@ package service
 import (
 	"context"
 	"fmt"
-	"strings" // Import strings package for TrimSpace
+	"strings"
 	"time"
 
 	"github.com/forddyce/mini-evv-logger/apps/api/internal/models"
 	"github.com/forddyce/mini-evv-logger/apps/api/internal/repository"
 )
 
-// ScheduleService defines the interface for business logic related to schedules.
 type ScheduleService interface {
 	GetSchedules(ctx context.Context) ([]models.Schedule, error)
 	GetTodaySchedules(ctx context.Context) ([]models.Schedule, error)
@@ -19,20 +18,17 @@ type ScheduleService interface {
 	EndVisit(ctx context.Context, id string, latitude, longitude float64, address string) error
 	UpdateTaskStatus(ctx context.Context, taskID string, completed bool, reason *string) error
 	ResetSampleData(ctx context.Context) error
-	GetScheduleStats(ctx context.Context) (*models.ScheduleStats, error) // New method for dashboard stats
+	GetScheduleStats(ctx context.Context) (*models.ScheduleStats, error)
 }
 
-// scheduleService implements ScheduleService using a ScheduleRepository.
 type scheduleService struct {
 	repo repository.ScheduleRepository
 }
 
-// NewScheduleService creates a new ScheduleService.
 func NewScheduleService(repo repository.ScheduleRepository) ScheduleService {
 	return &scheduleService{repo: repo}
 }
 
-// GetSchedules retrieves all schedules.
 func (s *scheduleService) GetSchedules(ctx context.Context) ([]models.Schedule, error) {
 	schedules, err := s.repo.GetSchedules(ctx)
 	if err != nil {
@@ -41,8 +37,6 @@ func (s *scheduleService) GetSchedules(ctx context.Context) ([]models.Schedule, 
 	return schedules, nil
 }
 
-// GetTodaySchedules retrieves all schedules (for demo purposes).
-// In a production app, this would filter by the current date.
 func (s *scheduleService) GetTodaySchedules(ctx context.Context) ([]models.Schedule, error) {
 	schedules, err := s.repo.GetTodaySchedules(ctx)
 	if err != nil {
@@ -51,7 +45,6 @@ func (s *scheduleService) GetTodaySchedules(ctx context.Context) ([]models.Sched
 	return schedules, nil
 }
 
-// GetScheduleByID retrieves a single schedule by its ID, including its tasks.
 func (s *scheduleService) GetScheduleByID(ctx context.Context, id string) (*models.Schedule, error) {
 	schedule, err := s.repo.GetScheduleByID(ctx, id)
 	if err != nil {
@@ -60,7 +53,6 @@ func (s *scheduleService) GetScheduleByID(ctx context.Context, id string) (*mode
 	return schedule, nil
 }
 
-// StartVisit logs the start of a visit, updating status and capturing location/timestamp.
 func (s *scheduleService) StartVisit(ctx context.Context, id string, latitude, longitude float64, address string) error {
 	visitStart := time.Now()
 	startLocation := models.Location{
@@ -69,7 +61,6 @@ func (s *scheduleService) StartVisit(ctx context.Context, id string, latitude, l
 		Address:   address,
 	}
 
-	// You might add business logic here, e.g., check if schedule is already in progress
 	schedule, err := s.repo.GetScheduleByID(ctx, id)
 	if err != nil {
 		return fmt.Errorf("service: failed to get schedule before starting visit: %w", err)
@@ -85,7 +76,6 @@ func (s *scheduleService) StartVisit(ctx context.Context, id string, latitude, l
 	return nil
 }
 
-// EndVisit logs the end of a visit, updating status and capturing location/timestamp.
 func (s *scheduleService) EndVisit(ctx context.Context, id string, latitude, longitude float64, address string) error {
 	visitEnd := time.Now()
 	endLocation := models.Location{
@@ -94,7 +84,6 @@ func (s *scheduleService) EndVisit(ctx context.Context, id string, latitude, lon
 		Address:   address,
 	}
 
-	// You might add business logic here, e.g., check if schedule is actually in progress
 	schedule, err := s.repo.GetScheduleByID(ctx, id)
 	if err != nil {
 		return fmt.Errorf("service: failed to get schedule before ending visit: %w", err)
@@ -110,9 +99,7 @@ func (s *scheduleService) EndVisit(ctx context.Context, id string, latitude, lon
 	return nil
 }
 
-// UpdateTaskStatus updates the completion status and reason for a specific task.
 func (s *scheduleService) UpdateTaskStatus(ctx context.Context, taskID string, completed bool, reason *string) error {
-	// Add any business logic for task updates here, e.g., validation
 	err := s.repo.UpdateTaskStatus(ctx, taskID, completed, reason)
 	if err != nil {
 		return fmt.Errorf("service: failed to update task status for ID %s: %w", taskID, err)
@@ -120,7 +107,6 @@ func (s *scheduleService) UpdateTaskStatus(ctx context.Context, taskID string, c
 	return nil
 }
 
-// ResetSampleData calls the repository to reset sample data.
 func (s *scheduleService) ResetSampleData(ctx context.Context) error {
 	err := s.repo.ResetSampleData(ctx)
 	if err != nil {
@@ -129,9 +115,8 @@ func (s *scheduleService) ResetSampleData(ctx context.Context) error {
 	return nil
 }
 
-// GetScheduleStats calculates and returns dashboard statistics.
 func (s *scheduleService) GetScheduleStats(ctx context.Context) (*models.ScheduleStats, error) {
-	allSchedules, err := s.repo.GetSchedules(ctx) // Fetch all schedules
+	allSchedules, err := s.repo.GetSchedules(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("service: failed to get schedules for stats: %w", err)
 	}
@@ -141,17 +126,14 @@ func (s *scheduleService) GetScheduleStats(ctx context.Context) (*models.Schedul
 	upcomingToday := 0
 	completedToday := 0
 
-	todayFormatted := time.Now().Format("Mon, 02 Jan 2006") // e.g., "Mon, 15 Jan 2025"
+	todayFormatted := time.Now().Format("Mon, 02 Jan 2006")
 
 	for _, schedule := range allSchedules {
-		// --- DEBUGGING LOG ---
 		fmt.Printf("DEBUG: Processing schedule ID: %s, ShiftDate: '%s', Status: '%s'\n", schedule.ID, schedule.ShiftDate, schedule.Status)
-		// --- END DEBUGGING LOG ---
 
-		// Defensive check: Skip if ShiftDate is empty
 		if strings.TrimSpace(schedule.ShiftDate) == "" {
 			fmt.Printf("Warning: Skipping schedule %s due to empty ShiftDate.\n", schedule.ID)
-			continue // Skip this schedule for stats calculation if date is missing
+			continue
 		}
 
 		switch schedule.Status {
@@ -159,15 +141,14 @@ func (s *scheduleService) GetScheduleStats(ctx context.Context) (*models.Schedul
 			shiftDate, err := time.Parse("Mon, 02 Jan 2006", schedule.ShiftDate)
 			if err != nil {
 				fmt.Printf("Warning: Could not parse shift date '%s' for schedule %s: %v\n", schedule.ShiftDate, schedule.ID, err)
-				continue // Skip this schedule if date parsing fails
+				continue
 			}
-			if shiftDate.Before(time.Now().Truncate(24 * time.Hour)) { // If shift date is before today
+			if shiftDate.Before(time.Now().Truncate(24 * time.Hour)) {
 				missedSchedules++
 			} else if schedule.ShiftDate == todayFormatted {
 				upcomingToday++
 			}
 		case "completed":
-			// Check if completed today
 			if schedule.VisitEnd != nil && schedule.VisitEnd.Format("Mon, 02 Jan 2006") == todayFormatted {
 				completedToday++
 			}

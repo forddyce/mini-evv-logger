@@ -1,29 +1,24 @@
-// apps/web/src/store/useScheduleStore.ts
-
 import { create } from "zustand";
-import type { Schedule, ScheduleStats, Task } from "../types/api"; // Import types
+import type { Schedule, ScheduleStats } from "../types/api";
 
-// Base URL for your API. On Vercel, this will be your deployed domain.
-// Locally, it will be Vercel CLI's proxy (e.g., http://localhost:3000).
-// The /api prefix is handled by Vercel's routing.
 const BASE_API_URL = ""; // Leave empty, Vercel will resolve /api automatically.
 
 interface ScheduleState {
   schedules: Schedule[];
   todaySchedules: Schedule[];
-  currentScheduleDetail: Schedule | null; // New: For detailed view of a single schedule
+  currentScheduleDetail: Schedule | null;
   stats: ScheduleStats;
   loading: {
     schedules: boolean;
     todaySchedules: boolean;
-    currentScheduleDetail: boolean; // New: Loading state for single schedule
+    currentScheduleDetail: boolean;
     stats: boolean;
-    action: boolean; // For reset, start/end visit, update task
+    action: boolean;
   };
   error: {
     schedules: string | null;
     todaySchedules: string | null;
-    currentScheduleDetail: string | null; // New: Error state for single schedule
+    currentScheduleDetail: string | null;
     stats: string | null;
     action: string | null;
   };
@@ -32,7 +27,7 @@ interface ScheduleState {
 interface ScheduleActions {
   fetchSchedules: () => Promise<void>;
   fetchTodaySchedules: () => Promise<void>;
-  fetchScheduleById: (id: string) => Promise<void>; // New: Action to fetch single schedule
+  fetchScheduleById: (id: string) => Promise<void>;
   fetchStats: () => Promise<void>;
   resetSampleData: () => Promise<void>;
   startVisit: (
@@ -56,7 +51,7 @@ type ScheduleStore = ScheduleState & ScheduleActions;
 export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   schedules: [],
   todaySchedules: [],
-  currentScheduleDetail: null, // Initialize new state
+  currentScheduleDetail: null,
   stats: {
     totalSchedules: 0,
     completedSchedules: 0,
@@ -69,19 +64,18 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   loading: {
     schedules: false,
     todaySchedules: false,
-    currentScheduleDetail: false, // Initialize new loading state
+    currentScheduleDetail: false,
     stats: false,
     action: false,
   },
   error: {
     schedules: null,
     todaySchedules: null,
-    currentScheduleDetail: null, // Initialize new error state
+    currentScheduleDetail: null,
     stats: null,
     action: null,
   },
 
-  // Action to fetch all schedules
   fetchSchedules: async () => {
     set((state) => ({
       loading: { ...state.loading, schedules: true },
@@ -94,6 +88,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       }
       const data: Schedule[] = await response.json();
       set({ schedules: data });
+      // eslint-disable-next-line
     } catch (err: any) {
       console.error("Failed to fetch schedules:", err);
       set((state) => ({ error: { ...state.error, schedules: err.message } }));
@@ -102,7 +97,6 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
   },
 
-  // Action to fetch today's schedules (kept in store but not used by HomePage)
   fetchTodaySchedules: async () => {
     set((state) => ({
       loading: { ...state.loading, todaySchedules: true },
@@ -128,7 +122,6 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
   },
 
-  // New: Action to fetch a single schedule by ID
   fetchScheduleById: async (id: string) => {
     set((state) => ({
       loading: { ...state.loading, currentScheduleDetail: true },
@@ -155,7 +148,6 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
   },
 
-  // Action to fetch schedule statistics
   fetchStats: async () => {
     set((state) => ({
       loading: { ...state.loading, stats: true },
@@ -168,6 +160,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       }
       const data: ScheduleStats = await response.json();
       set({ stats: data });
+      // eslint-disable-next-line
     } catch (err: any) {
       console.error("Failed to fetch stats:", err);
       set((state) => ({ error: { ...state.error, stats: err.message } }));
@@ -176,7 +169,6 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
   },
 
-  // Action to reset sample data
   resetSampleData: async () => {
     set((state) => ({
       loading: { ...state.loading, action: true },
@@ -189,11 +181,11 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      // Re-fetch all data after reset
       await get().fetchSchedules();
-      await get().fetchTodaySchedules(); // Keep this call to ensure store consistency
+      await get().fetchTodaySchedules();
       await get().fetchStats();
-      alert("Sample data reset successfully!"); // Using alert for simplicity, consider a custom modal
+      alert("Sample data reset successfully!");
+      // eslint-disable-next-line
     } catch (err: any) {
       console.error("Failed to reset sample data:", err);
       set((state) => ({ error: { ...state.error, action: err.message } }));
@@ -203,7 +195,6 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
   },
 
-  // Action to start a visit
   startVisit: async (scheduleId, location) => {
     set((state) => ({
       loading: { ...state.loading, action: true },
@@ -221,22 +212,20 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      // Update the status of the specific schedule in the store
       set((state) => ({
         schedules: state.schedules.map((s) =>
           s.id === scheduleId ? { ...s, status: "in_progress" } : s
         ),
-        todaySchedules: state.todaySchedules.map(
-          (
-            s // Update todaySchedules too
-          ) => (s.id === scheduleId ? { ...s, status: "in_progress" } : s)
+        todaySchedules: state.todaySchedules.map((s) =>
+          s.id === scheduleId ? { ...s, status: "in_progress" } : s
         ),
         currentScheduleDetail:
           state.currentScheduleDetail?.id === scheduleId
             ? { ...state.currentScheduleDetail, status: "in_progress" }
-            : state.currentScheduleDetail, // Update detail page too
+            : state.currentScheduleDetail,
       }));
       alert("Visit started successfully!");
+      // eslint-disable-next-line
     } catch (err: any) {
       console.error("Failed to start visit:", err);
       set((state) => ({ error: { ...state.error, action: err.message } }));
@@ -246,7 +235,6 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
   },
 
-  // Action to end a visit
   endVisit: async (scheduleId, location) => {
     set((state) => ({
       loading: { ...state.loading, action: true },
@@ -264,22 +252,20 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      // Update the status of the specific schedule in the store
       set((state) => ({
         schedules: state.schedules.map((s) =>
           s.id === scheduleId ? { ...s, status: "completed" } : s
         ),
-        todaySchedules: state.todaySchedules.map(
-          (
-            s // Update todaySchedules too
-          ) => (s.id === scheduleId ? { ...s, status: "completed" } : s)
+        todaySchedules: state.todaySchedules.map((s) =>
+          s.id === scheduleId ? { ...s, status: "completed" } : s
         ),
         currentScheduleDetail:
           state.currentScheduleDetail?.id === scheduleId
             ? { ...state.currentScheduleDetail, status: "completed" }
-            : state.currentScheduleDetail, // Update detail page too
+            : state.currentScheduleDetail,
       }));
       alert("Visit ended successfully!");
+      // eslint-disable-next-line
     } catch (err: any) {
       console.error("Failed to end visit:", err);
       set((state) => ({ error: { ...state.error, action: err.message } }));
@@ -289,7 +275,6 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
   },
 
-  // Action to update task status
   updateTaskStatus: async (
     scheduleId,
     taskId,
@@ -312,7 +297,6 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      // Update the task status in the store
       set((state) => ({
         schedules: state.schedules.map((s) =>
           s.id === scheduleId
@@ -324,18 +308,15 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
               }
             : s
         ),
-        todaySchedules: state.todaySchedules.map(
-          (
-            s // Update todaySchedules too
-          ) =>
-            s.id === scheduleId
-              ? {
-                  ...s,
-                  tasks: s.tasks?.map((t) =>
-                    t.id === taskId ? { ...t, completed, reason } : t
-                  ),
-                }
-              : s
+        todaySchedules: state.todaySchedules.map((s) =>
+          s.id === scheduleId
+            ? {
+                ...s,
+                tasks: s.tasks?.map((t) =>
+                  t.id === taskId ? { ...t, completed, reason } : t
+                ),
+              }
+            : s
         ),
         currentScheduleDetail:
           state.currentScheduleDetail?.id === scheduleId
@@ -345,9 +326,9 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
                   t.id === taskId ? { ...t, completed, reason } : t
                 ),
               }
-            : state.currentScheduleDetail, // Update detail page too
+            : state.currentScheduleDetail,
       }));
-      // alert("Task status updated successfully!");
+      // eslint-disable-next-line
     } catch (err: any) {
       console.error("Failed to update task status:", err);
       set((state) => ({ error: { ...state.error, action: err.message } }));

@@ -1,27 +1,25 @@
 import React from "react";
-import type { Schedule } from "../types/api"; // Import the Schedule type
 
 interface ScheduleCardProps {
-  // Original props, now derived from the 'schedule' object
   id: string;
-  status: "scheduled" | "in_progress" | "completed" | "cancelled"; // Use API status types
+  status: "scheduled" | "in_progress" | "completed" | "cancelled";
   clientName: string;
   serviceName: string;
-  location: string; // This will be the address string
+  location: string;
   date: string;
-  timeRange: string; // This will be "HH:MM - HH:MM"
+  timeRange: string;
   isActive: boolean;
   isAnyActive: boolean;
   onClockIn: (
     scheduleId: string,
     clientName: string,
-    location: string, // address string
-    timeRange: string // "HH:MM - HH:MM"
+    location: string,
+    timeRange: string
   ) => void;
   onClockOut: (scheduleId: string) => void;
   onViewDetails: (scheduleId: string) => void;
-  clientAvatar?: string; // Optional client avatar URL
-  isActionLoading: boolean; // Prop to disable buttons during API calls
+  clientAvatar?: string;
+  isActionLoading: boolean;
 }
 
 const ScheduleCard: React.FC<ScheduleCardProps> = ({
@@ -36,8 +34,8 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   onClockIn,
   onClockOut,
   onViewDetails,
-  clientAvatar, // Use clientAvatar prop
-  isActionLoading, // Destructure isActionLoading
+  clientAvatar,
+  isActionLoading,
 }) => {
   let statusColorClass = "";
   let statusBgClass = "";
@@ -48,14 +46,14 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   let clockInDisabled = false;
 
   switch (status) {
-    case "scheduled": // Use API status string
+    case "scheduled":
       statusColorClass = "text-blue-600";
       statusBgClass = "bg-blue-100";
       button1Text = "Clock In Now";
       button1ColorClass = "bg-emerald-600 hover:bg-emerald-700 text-white";
-      clockInDisabled = isAnyActive; // Disable if any other schedule is active
+      clockInDisabled = isAnyActive;
       break;
-    case "in_progress": // Use API status string
+    case "in_progress":
       statusColorClass = "text-orange-600";
       statusBgClass = "bg-orange-100";
       button1Text = "View Progress";
@@ -63,13 +61,13 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       button2Text = "Clock Out Now";
       button2ColorClass = "bg-emerald-600 hover:bg-emerald-700 text-white";
       break;
-    case "completed": // Use API status string
+    case "completed":
       statusColorClass = "text-green-600";
       statusBgClass = "bg-green-100";
       button1Text = "View Report";
       button1ColorClass = "bg-gray-200 hover:bg-gray-300 text-gray-800";
       break;
-    case "cancelled": // Use API status string
+    case "cancelled":
       statusColorClass = "text-red-600";
       statusBgClass = "bg-red-100";
       break;
@@ -80,13 +78,8 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   const handleButton1Click = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (status === "scheduled") {
-      // For 'scheduled' status, this button is "Clock In Now"
-      // It calls the onClockIn prop, passing necessary schedule details.
       onClockIn(id, clientName, location, timeRange);
     } else if (status === "in_progress" || status === "completed") {
-      // For 'in_progress' status, this button is "View Progress"
-      // For 'completed' status, this button is "View Report"
-      // Both navigate to the details/report page.
       console.log(`${button1Text} clicked for ${clientName}`);
       onViewDetails(id);
     }
@@ -95,14 +88,11 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   const handleButton2Click = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (status === "in_progress") {
-      // For 'in_progress' status, this button is "Clock Out Now"
-      // It calls the onClockOut prop to initiate the clock-out process.
       onClockOut(id);
     }
   };
 
   const handleCardClick = () => {
-    // Allow clicking the card itself to view details if it's not cancelled
     if (
       status === "scheduled" ||
       status === "in_progress" ||
@@ -127,8 +117,8 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
         <span
           className={`text-sm font-semibold px-3 py-1 rounded-full ${statusBgClass} ${statusColorClass}`}
         >
-          {status.charAt(0).toUpperCase() + status.slice(1).replace("-", " ")}{" "}
-          {/* Format status for display */}
+          {status.charAt(0).toUpperCase() +
+            status.slice(1).replace("-", " ")}{" "}
         </span>
         <button className="text-gray-500 hover:text-gray-700">
           <svg
@@ -152,7 +142,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
         <img
           src={
             clientAvatar || "https://placehold.co/48x48/E0E7FF/4F46E5?text=NA"
-          } // Use clientAvatar prop
+          }
           alt={`${clientName} Avatar`}
           className="w-12 h-12 rounded-full mr-4"
         />
@@ -233,7 +223,6 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
           {button1Text && (
             <button
               onClick={handleButton1Click}
-              // Disable if any action is loading OR if it's a scheduled card and another is active
               disabled={
                 isActionLoading || (status === "scheduled" && clockInDisabled)
               }
@@ -251,7 +240,6 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
           {button2Text && (
             <button
               onClick={handleButton2Click}
-              // Disable if any action is loading
               disabled={isActionLoading}
               className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-colors duration-200 ${button2ColorClass} ${
                 isActionLoading ? "opacity-50 cursor-not-allowed" : ""

@@ -14,21 +14,21 @@ export interface Task {
 
 export interface Schedule {
   id: string;
-  client_id: string; // Corresponds to client_id in DB
+  client_id: string;
   client_name: string;
-  client_avatar?: string; // Optional URL for client avatar
+  client_avatar?: string;
   service_name: string;
-  location: Location; // Parsed from JSONB
-  shift_date: string; // e.g., "Mon, 15 Jan 2025"
-  start_time: string; // e.g., "09:00"
-  end_time: string; // e.g., "10:00"
-  status: "scheduled" | "in_progress" | "completed" | "cancelled"; // Corrected to snake_case
-  visit_start?: string | null; // ISO 8601 string or null
-  visit_end?: string | null; // ISO 8601 string or null
+  location: Location;
+  shift_date: string;
+  start_time: string;
+  end_time: string;
+  status: "scheduled" | "in_progress" | "completed" | "cancelled";
+  visit_start?: string | null;
+  visit_end?: string | null;
   start_location?: Location | null;
   end_location?: Location | null;
   service_notes?: string;
-  tasks?: Task[]; // Array of Tasks associated with this schedule
+  tasks?: Task[];
 }
 
 export interface ScheduleStats {
